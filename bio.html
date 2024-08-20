@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Pirâmide Ecológica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .organismo {
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #000;
+            cursor: pointer;
+            display: inline-block;
+            width: 100%;
+            max-width: 150px;
+            box-sizing: border-box;
+        }
+        .piramide {
+            margin-top: 20px;
+        }
+        .nivel-trofico {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        #mensagem {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        @media (min-width: 768px) {
+            .organismo {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Jogo da Pirâmide Ecológica</h1>
+    <p>Você deve identificar os níveis tróficos dos animais apresentados.</p>
+    
+    <div id="fase">
+        <h2>Fase 1</h2>
+        <div id="organismos"></div>
+    </div>
+
+    <div class="piramide">
+        <div class="nivel-trofico">Produtor: <span id="Produtor">[vazio]</span></div>
+        <div class="nivel-trofico">Consumidor Primário: <span id="Consumidor Primário">[vazio]</span></div>
+        <div class="nivel-trofico">Consumidor Secundário: <span id="Consumidor Secundário">[vazio]</span></div>
+        <div class="nivel-trofico">Consumidor Terciário: <span id="Consumidor Terciário">[vazio]</span></div>
+        <div class="nivel-trofico" id="quaternario" style="display: none;">Consumidor Quaternário: <span id="Consumidor Quaternário">[vazio]</span></div>
+    </div>
+
+    <div id="mensagem"></div>
+
+    <script>
+        const fases = [
+            {
+                fase: 1,
+                organismos: [
+                    { nome: "Folha de alface", nivel: "Produtor" },
+                    { nome: "Lagarta-verde", nivel: "Consumidor Primário" },
+                    { nome: "Papa-lagarta", nivel: "Consumidor Secundário" },
+                    { nome: "Cobra-papagaio", nivel: "Consumidor Terciário" },
+                    { nome: "Carcará", nivel: "Consumidor Quaternário" }
+                ],
+                niveisTroficos: ["Produtor", "Consumidor Primário", "Consumidor Secundário", "Consumidor Terciário", "Consumidor Quaternário"]
+            },
+            {
+                fase: 2,
+                organismos: [
+                    { nome: "Trevo", nivel: "Produtor" },
+                    { nome: "Caracol", nivel: "Consumidor Primário" },
+                    { nome: "Tordo", nivel: "Consumidor Secundário" },
+                    { nome: "Gavião", nivel: "Consumidor Terciário" }
+                ],
+                niveisTroficos: ["Produtor", "Consumidor Primário", "Consumidor Secundário", "Consumidor Terciário"]
+            },
+            {
+                fase: 3,
+                organismos: [
+                    { nome: "Cacto", nivel: "Produtor" },
+                    { nome: "Coelho", nivel: "Consumidor Primário" },
+                    { nome: "Cobra", nivel: "Consumidor Secundário" },
+                    { nome: "Lobo", nivel: "Consumidor Terciário" }
+                ],
+                niveisTroficos: ["Produtor", "Consumidor Primário", "Consumidor Secundário", "Consumidor Terciário"]
+            }
+        ];
+
+        let faseAtual = 0;
+        let organismosEscolhidos = [];
+        let piramide = {};
+
+        function iniciarFase() {
+            if (faseAtual >= fases.length) {
+                document.getElementById("mensagem").innerText += `\nJogo terminado! Parabéns por completar todas as fases.`;
+                return;
+            }
+
+            const fase = fases[faseAtual];
+            document.getElementById("fase").querySelector("h2").innerText = `Fase ${fase.fase}`;
+            const organismosDiv = document.getElementById("organismos");
+            organismosDiv.innerHTML = "";
+            organismosEscolhidos = fase.organismos;
+            piramide = {};
+            fase.niveisTroficos.forEach(nivel => {
+                piramide[nivel] = "";
+            });
+
+            document.getElementById("quaternario").style.display = fase.fase === 1 ? "block" : "none";
+
+            organismosEscolhidos.forEach((organismo, index) => {
+                const div = document.createElement("div");
+                div.className = "organismo";
+                div.innerText = organismo.nome;
+                div.onclick = () => escolherOrganismo(index);
+                organismosDiv.appendChild(div);
+            });
+
+            atualizarPiramide();
+        }
+
+        function atualizarPiramide() {
+            Object.keys(piramide).forEach(nivel => {
+                document.getElementById(nivel).innerText = piramide[nivel] || "[vazio]";
+            });
+        }
+
+        function escolherOrganismo(index) {
+            const fase = fases[faseAtual];
+            const organismo = organismosEscolhidos[index];
+            const nivelAtual = fase.niveisTroficos.find(nivel => !piramide[nivel]);
+
+            if (organismo.nivel === nivelAtual) {
+                piramide[nivelAtual] = organismo.nome;
+                document.getElementById("mensagem").innerText = "Correto!";
+                atualizarPiramide();
+                if (Object.values(piramide).every(valor => valor)) {
+                    finalizarFase();
+                }
+            } else {
+                document.getElementById("mensagem").innerText = `Errado! O ${organismo.nome} não é ${nivelAtual}. Tente novamente.`;
+            }
+        }
+
+        function finalizarFase() {
+            document.getElementById("mensagem").innerText = `Você completou a Fase ${fases[faseAtual].fase}.`;
+            faseAtual++;
+            setTimeout(iniciarFase, 2000);
+        }
+
+        iniciarFase();
+    </script>
+</body>
+</html>
